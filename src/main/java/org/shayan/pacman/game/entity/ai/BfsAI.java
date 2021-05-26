@@ -84,7 +84,7 @@ public class BfsAI extends AI {
             nowX = Math.max(0, Math.min(nowX, world.getGameMap().getWidth()-1));
             nowY = Math.max(0, Math.min(nowY, world.getGameMap().getHeight()-1));
 
-            if(bfsDad == null || bfsDad[nowX][nowY] == null || Math.sqrt(dirX * dirX + dirY * dirY) <= world.getBlockLength()){
+            if(bfsDad == null || bfsDad[nowX][nowY] == null || Math.sqrt(dirX * dirX + dirY * dirY) <= 2.5 * world.getBlockLength()){
                 setDirection(dirX, dirY);
             } else{
                 double nowXR = (nowX + 0.5) * world.getBlockLength();

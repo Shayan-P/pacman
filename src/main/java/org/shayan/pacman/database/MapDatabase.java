@@ -23,17 +23,18 @@ public class MapDatabase {
     }
     public static void removeMap(String mapName) throws PacmanException {
         File file = new File("maps/" + mapName);
-        System.out.println(file);
         if(!file.exists())
             throw new PacmanException("no such file!");
         if(!file.delete())
             throw new PacmanException("can't delete file");
     }
-    public static void saveTempMap() throws PacmanException {
+    public static String saveTempMap() throws PacmanException {
         try {
             File file = new File("maps/tmp.txt");
-            if(!file.renameTo(new File(getFreePath())))
+            String path = getFreePath();
+            if(!file.renameTo(new File(path)))
                 throw new PacmanException("can't move");
+            return path;
         } catch (Exception exception){
             throw new PacmanException("there is no recently random generated map!");
         }

@@ -1,9 +1,15 @@
 package org.shayan.pacman.database;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import org.shayan.pacman.menu.GameMenu;
 import org.shayan.pacman.model.PacmanException;
 import org.shayan.pacman.model.User;
 
 import java.io.*;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -11,14 +17,15 @@ import java.util.List;
 public class Settings {
     static String DefaultMapPath;
     static final String databasePath = "database/db.dat";
-    static boolean soundIsOn = true;
-    static int gameDifficulty = 0;
-    static int favoritePacmanId = 0;
+    static BooleanProperty soundIsOn = new SimpleBooleanProperty(false);
+    static int gameDifficulty = 1;
+    static int favoritePacmanId = 1;
     static int defaultPacmanHearts = 3;
 
     public static void initialize(){
         loadFromDatabase();
-        DefaultMapPath = MapDatabase.getMapPaths()[0];
+        if(DefaultMapPath == null)
+            DefaultMapPath = MapDatabase.getMapPaths()[0];
     }
 
     public static void saveToDatabase() {
@@ -27,6 +34,23 @@ public class Settings {
                     new FileOutputStream(databasePath));
             for (User user : User.getUsers())
                 objectOutputStream.writeObject(user);
+            objectOutputStream.writeObject("this is the end of users");
+            objectOutputStream.writeObject(User.getCurrentUser());
+
+//            try {
+//                objectOutputStream.writeObject(History.getLastGameMenu());
+//                System.out.println("error in saving current game");
+//            } catch (Exception e){
+//                e.printStackTrace();
+//                objectOutputStream.writeObject(null);
+//            }
+
+            objectOutputStream.writeObject(DefaultMapPath);
+            objectOutputStream.writeObject(soundIsOn.getValue());
+            objectOutputStream.writeObject(gameDifficulty);
+            objectOutputStream.writeObject(favoritePacmanId);
+            objectOutputStream.writeObject(defaultPacmanHearts);
+
             objectOutputStream.flush();
             objectOutputStream.close();
         } catch (IOException exception) {
@@ -40,14 +64,43 @@ public class Settings {
             try {
                 while (true) {
                     Object object = objectInputStream.readObject();
-                    assert object instanceof User;
-                    User user = (User)object;
-                    user.save();
+                    if(object instanceof User) {
+                        User user = (User) object;
+                        user.save();
+                    }
+                    else {
+                        object = objectInputStream.readObject();
+                        if (object != null)
+                            User.loginCurrentUser((User) object);
+
+//                        try {
+//                            object = objectInputStream.readObject();
+//                            History.setLastGameMenu((GameMenu) object);
+//                        } catch (Exception e){
+//                            e.printStackTrace();
+//                            System.out.println("error in loading current game");
+//                        }
+//
+                        object = objectInputStream.readObject();
+                        Settings.setDefaultMapPath((String) object);
+
+                        object = objectInputStream.readObject();
+                        Settings.soundIsOn.setValue((boolean) object);
+
+                        object = objectInputStream.readObject();
+                        Settings.gameDifficulty = (int) object;
+
+                        object = objectInputStream.readObject();
+                        Settings.favoritePacmanId = (int) object;
+
+                        object = objectInputStream.readObject();
+                        Settings.defaultPacmanHearts = (int) object;
+                    }
                 }
             } catch (Exception ignored) {
             }
         } catch (IOException exception) {
-            throw new Error("failed to load!");
+            System.out.println("error in reading from db");
         }
     }
 
@@ -60,9 +113,12 @@ public class Settings {
     }
 
     public static void toggleSound(){
-        soundIsOn ^= true;
+        soundIsOn.setValue(!soundIsOn.get());
     }
     public static boolean isSoundOn(){
+        return soundIsOn.get();
+    }
+    public static BooleanProperty getSoundIsOnProperty(){
         return soundIsOn;
     }
 
@@ -70,12 +126,21 @@ public class Settings {
         return gameDifficulty;
     }
 
+    public static String getGameDifficultyString(int id){
+        if(id == 0)
+            return "Easy";
+        if(id == 1)
+            return "Normal";
+        if(id == 2)
+            return "Hard";
+        return null;
+    }
     public static void setGameDifficulty(String gameDifficulty) {
-        if(gameDifficulty.equalsIgnoreCase("easy"))
+        if(gameDifficulty.equalsIgnoreCase(getGameDifficultyString(0)))
             Settings.gameDifficulty = 0;
-        else if(gameDifficulty.equalsIgnoreCase("normal"))
+        else if(gameDifficulty.equalsIgnoreCase(getGameDifficultyString(1)))
             Settings.gameDifficulty = 1;
-        else if(gameDifficulty.equalsIgnoreCase("hard"))
+        else if(gameDifficulty.equalsIgnoreCase(getGameDifficultyString(2)))
             Settings.gameDifficulty = 2;
         else
             throw new Error("invalid string for difficulty");
@@ -84,6 +149,10 @@ public class Settings {
     public static String getFavoritePacmanPathPrefix() {
         return "/pacman/" + favoritePacmanId;
     }
+    public static int getFavoritePacmanId() {
+        return favoritePacmanId;
+    }
+
     public static void setFavoritePacmanId(int id){
         favoritePacmanId = id;
     }

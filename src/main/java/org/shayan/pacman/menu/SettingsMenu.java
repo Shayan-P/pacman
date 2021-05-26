@@ -9,16 +9,17 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import javafx.scene.shape.Sphere;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.shayan.pacman.database.MapDatabase;
 import org.shayan.pacman.database.Settings;
+import org.shayan.pacman.extendedNodes.BeautifulButton;
+import org.shayan.pacman.extendedNodes.BeautifulText;
+import org.shayan.pacman.extendedNodes.ShapeBar;
+import org.shayan.pacman.extra.DummyPacman;
+import org.shayan.pacman.game.entity.Pacman;
 import org.shayan.pacman.model.GameMap;
 import org.shayan.pacman.model.PacmanException;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class SettingsMenu extends AbstractMenu {
     private VBox settingItems;
@@ -32,19 +33,22 @@ public class SettingsMenu extends AbstractMenu {
     {
         hearts = new ShapeBar("/icons/heart.png") {
             @Override
-            int getNumber() {
+            public int getNumber() {
                 return Settings.getDefaultPacmanHearts();
             }
         };
     }
 
+    private String mapPathToName(String path){
+        String[] tmp = path.split("/");
+        return tmp[tmp.length-1];
+    }
+
     private void refreshMapChoices(){
         mapChoices.getItems().clear();
-        for(String path: MapDatabase.getMapPaths()) {
-            String[] tmp = path.split("/");
-            String name = tmp[tmp.length-1];
-            mapChoices.getItems().add(name);
-        }
+        for(String path: MapDatabase.getMapPaths())
+            mapChoices.getItems().add(mapPathToName(path));
+        mapChoices.setValue(mapPathToName(Settings.getDefaultMapPath()));
     }
 
     private void communicate(ExceptionThrowingRunnable runner, String onSuccess){
@@ -59,13 +63,16 @@ public class SettingsMenu extends AbstractMenu {
 
     private void addMapSetting(){
         HBox container = new HBox(
-                new HBox(new BeautifulText("map: ", Color.WHEAT, 27), mapChoices),
+                new HBox(new BeautifulText("map: ", Color.WHEAT, 30), mapChoices),
                 new HBox(new BeautifulButton("delete map!", 27, ()->{
                     communicate(()-> {
-                                if (mapChoices.getValue() == null)
-                                    throw new PacmanException("no map is selected");
-                                MapDatabase.removeMap(mapChoices.getValue());
-                            }, "deleted successfully!");
+                        if (mapChoices.getValue() == null)
+                            throw new PacmanException("no map is selected");
+                        MapDatabase.removeMap(mapChoices.getValue());
+                        if(MapDatabase.getMapPaths().length == 0)
+                            MapDatabase.saveToTempMap(new GameMap());
+                        Settings.setDefaultMapPath(MapDatabase.getMapPaths()[0]);
+                    }, "deleted successfully!");
                     refreshMapChoices();
                 })));
         container.setSpacing(10);
@@ -81,12 +88,15 @@ public class SettingsMenu extends AbstractMenu {
 
     private void addRandomMapGeneratorSetting(){
         BeautifulButton generate = new BeautifulButton("generate a random map", 20, ()->{
-            MapDatabase.saveToTempMap(new GameMap());
-            refreshMapChoices();
+            communicate(()-> {
+                MapDatabase.saveToTempMap(new GameMap());
+                Settings.setDefaultMapPath("maps/tmp.txt");
+                refreshMapChoices();
+            }, "generated successfully!");
         });
         BeautifulButton saveTmp = new BeautifulButton("save the random map", 20, ()->{
             communicate(()-> {
-                MapDatabase.saveTempMap();
+                Settings.setDefaultMapPath(MapDatabase.saveTempMap());
                 refreshMapChoices();
             }, "saved successfully!");
         });
@@ -107,9 +117,13 @@ public class SettingsMenu extends AbstractMenu {
         choices.setOnAction(e->{
             Settings.setGameDifficulty(choices.getValue());
         });
-
+        choices.setValue(Settings.getGameDifficultyString(Settings.getGameDifficulty()));
         choices.setBackground(new Background(new BackgroundFill(Color.GREY, CornerRadii.EMPTY, Insets.EMPTY)));
-        choices.getItems().addAll("Easy", "Normal", "Hard");
+        choices.getItems().addAll(
+                Settings.getGameDifficultyString(0),
+                Settings.getGameDifficultyString(1),
+                Settings.getGameDifficultyString(2)
+        );
     }
     private void addSoundSetting(){
         Image on = new Image(getClass().getResource("/icons/sound-on.png").toExternalForm());
@@ -132,33 +146,27 @@ public class SettingsMenu extends AbstractMenu {
     }
 
     public void addPacmanChoice(){
-        ComboBox<ImageView> choices = new ComboBox<>();
+        Pacman pacman = new DummyPacman(0, 0);
+        pacman.setFaceAnimation();
+        StackPane pacmanPane = new StackPane(pacman);
+
+        ComboBox<Integer> choices = new ComboBox<>();
         choices.setBackground(new Background(new BackgroundFill(Color.GREY, CornerRadii.EMPTY, Insets.EMPTY)));
 
-        settingItems.getChildren().add(new HBox(new BeautifulText("avatar: ", Color.WHEAT, 27), choices));
+        settingItems.getChildren().add(new HBox(20, new BeautifulText("avatar skin: ", Color.WHEAT, 27), choices, pacmanPane));
 
-        List<ImageView> imageViews = new ArrayList<>();
+        int numberOfPacman = Settings.getPacmanPrefixPaths().size();
 
-        // todo fix this!
-        int counter = 0;
-        for(String path : Settings.getPacmanPrefixPaths()){
-            System.out.println(path);
-            ImageView tmp = new ImageView(new Image(Settings.class.getResource(String.format("/pacman/%d/front/0.png", counter)).toExternalForm()));
-            counter += 1;
-            choices.getItems().add(tmp);
-            imageViews.add(tmp);
+        for(int i = 0; i < numberOfPacman; i++) {
+            choices.getItems().add(i);
         }
 
         choices.setOnAction(e->{
-            int innerCounter = 0;
-            for(ImageView imageView : imageViews){
-                if(imageView.equals(choices.getValue())){
-//                    String[] tmp = imageView.getImage().getUrl().split("/");
-//                    Settings.setFavoritePacmanId(Integer.parseInt(tmp[tmp.length-3]));
-                    Settings.setFavoritePacmanId(innerCounter);
-                }
-                innerCounter += 1;
-            }
+            Settings.setFavoritePacmanId(choices.getValue());
+            pacmanPane.getChildren().clear();
+            Pacman p = new DummyPacman(0, 0);
+            p.setFaceAnimation();
+            pacmanPane.getChildren().add(p);
         });
     }
 

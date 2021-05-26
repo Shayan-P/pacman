@@ -4,6 +4,7 @@ import javafx.scene.Scene;
 import javafx.scene.layout.*;
 import javafx.scene.paint.*;
 import javafx.stage.Stage;
+import org.shayan.pacman.extendedNodes.BeautifulText;
 import org.shayan.pacman.model.User;
 
 import java.util.Collections;

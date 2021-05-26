@@ -4,6 +4,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import org.shayan.pacman.extendedNodes.BeautifulButton;
+import org.shayan.pacman.extendedNodes.BeautifulText;
 import org.shayan.pacman.model.PacmanException;
 import org.shayan.pacman.model.User;
 

@@ -7,6 +7,8 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import org.shayan.pacman.extendedNodes.BeautifulButton;
+import org.shayan.pacman.extendedNodes.MenuTitle;
 
 abstract public class AbstractMenu extends Application {
     protected final double Width = 1000;

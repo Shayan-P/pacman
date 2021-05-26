@@ -37,6 +37,11 @@ public class User implements Comparable<User>, Serializable {
             throw new PacmanException("password is wrong");
         currentUser = user;
     }
+
+    public static void loginCurrentUser(User user) throws PacmanException {
+        loginCurrentUser(user.username, user.password);
+    }
+
     public static void logoutCurrentUser() {
         currentUser = null;
     }

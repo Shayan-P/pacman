@@ -13,7 +13,7 @@ abstract public class AI extends MovingEntity {
     }
 
     private void collisionWithPacman(){
-        if (this.getManhattanDistance(world.getPacman()) <= 4) {
+        if (this.getManhattanDistance(world.getPacman()) <= 0.6 * world.getBlockLength()) {
             world.fireEvent(new GhostEatEvent(this));
         }
     }
@@ -41,8 +41,13 @@ abstract public class AI extends MovingEntity {
         double len = Math.sqrt(dirX * dirX + dirY * dirY);
         if(len == 0)
             return;
-        setFX(dirX / len);
-        setFY(dirY / len);
+        if(world.getPacman().isSuperManMode()) {
+            setFX(-dirX / len);
+            setFY(-dirY / len);
+        } else{
+            setFX(dirX / len);
+            setFY(dirY / len);
+        }
     }
 
     abstract void setStrategy();

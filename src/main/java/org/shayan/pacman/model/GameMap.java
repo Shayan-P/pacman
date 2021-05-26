@@ -41,12 +41,12 @@ public class GameMap {
         cells = new MapEntity[width][height];
         for(int i = 0; i < n; i++){
             for(int j = 0; j < m; j++){
-                int r = rnd.nextInt(3);
-                if(r == 0)
+                int r = rnd.nextInt(10);
+                if(r < 5)
                     cells[i][j] = MapEntity.EMPTY;
-                if(r == 1)
+                else if(r < 9)
                     cells[i][j] = MapEntity.COIN;
-                if(r == 2)
+                else
                     cells[i][j] = MapEntity.WALL;
             }
         }

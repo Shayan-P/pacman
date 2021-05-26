@@ -10,11 +10,21 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import org.shayan.pacman.App;
 import org.shayan.pacman.database.History;
+import org.shayan.pacman.database.Settings;
+import org.shayan.pacman.extendedNodes.BeautifulText;
+import org.shayan.pacman.extendedNodes.MenuItem;
+import org.shayan.pacman.extra.AlertBox;
+import org.shayan.pacman.extra.DummyPacman;
 import org.shayan.pacman.game.entity.Pacman;
 import org.shayan.pacman.model.User;
 
 public class WelcomeMenu extends AbstractMenu {
+    static {
+        App.primaryStage.setOnCloseRequest(e->Settings.saveToDatabase());
+    }
+
     private void addMenuItems(){
         VBox menuItems = new VBox();
         root.getChildren().add(menuItems);
@@ -45,10 +55,7 @@ public class WelcomeMenu extends AbstractMenu {
                 }
             }));
         }
-        menuItems.getChildren().add(new MenuItem("quit", ()->{
-            if(new AlertBox().display("Are you sure you want to exit?"))
-                Utils.exit();
-        } ));
+        menuItems.getChildren().add(new MenuItem("quit", Utils::exitRequest));
 
         for(int i = 0; i < menuItems.getChildren().size(); i++){
             Node item = menuItems.getChildren().get(i);
@@ -89,54 +96,5 @@ public class WelcomeMenu extends AbstractMenu {
         addDummyPacman();
         addWelcomeToCurrentUser();
         stage.show();
-    }
-
-    class DummyPacman extends Pacman {
-        double destinationX = Width/2;
-        double destinationY = Height/2;
-
-        public DummyPacman(double x, double y) {
-            super(null, x, y);
-        }
-
-        @Override
-        public double getSpeedCof(){
-            return 0.8;
-        }
-
-        @Override
-        public double getR(){
-            return 30;
-        }
-
-        @Override
-        public void setWalkMovementAnimation(){
-            setLoop(new KeyFrame(Duration.millis(10), e->{
-                double dirX = destinationX - getX();
-                double dirY = destinationY - getY();
-                double dirLen = Math.sqrt(dirX * dirX + dirY * dirY);
-                if(dirLen < 3){
-                    setFX(0);
-                    setFY(0);
-                } else {
-                    setFX(dirX / dirLen * 2);
-                    setFY(dirY / dirLen * 2);
-                }
-                setX(getVX() + getX());
-                setY(getVY() + getY());
-            }));
-        }
-
-        @Override
-        public void setLoop(KeyFrame keyFrame){
-            Timeline tt = new Timeline(keyFrame);
-            tt.setCycleCount(Timeline.INDEFINITE);
-            tt.play();
-        }
-
-        public void setDestination(double x, double y){
-            destinationX = x;
-            destinationY = y;
-        }
     }
 }
