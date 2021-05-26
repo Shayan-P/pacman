@@ -8,21 +8,12 @@ public class LineChaserAI extends AI {
     @Override
     void setStrategy() {
         setLoop(new KeyFrame(Duration.millis(50), e->{
-            double dirX = GameWorld.getInstance().getPacman().getX() - getX();
-            double dirY = GameWorld.getInstance().getPacman().getY() - getY();
-            double len = Math.sqrt(dirX * dirX + dirY * dirY);
-            dirX/= len;
-            dirY/= len;
-            // todo do not crash when it becomes 0
-            dirX *= 2;
-            dirY *= 2;
-
-            setFX(dirX);
-            setFY(dirY);
+            setDirection(GameWorld.getInstance().getPacman().getX() - getX(), GameWorld.getInstance().getPacman().getY() - getY());
         }));
     }
 
-    public LineChaserAI(double x, double y){
-        super(x, y);
+    public LineChaserAI(int skinId, double x, double y){
+        super(skinId, x, y);
+        setStrategy();
     }
 }

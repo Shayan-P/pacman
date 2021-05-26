@@ -23,9 +23,25 @@ abstract public class AI extends MovingEntity {
         collisionWithPacman();
     }
 
-    public AI(double x, double y){
-        super(new Image[]{getImageInResource("/ai1/0.png")}, new Image[]{getImageInResource("/ai1/0.png")}, x, y);
-        setStrategy();
+    public AI(int skinId, double x, double y){
+        super(
+                new Image[]{getImageInResource(String.format("/ais/%d/front.png", skinId))},
+                new Image[]{getImageInResource(String.format("/ais/%d/right.png", skinId))},
+                x, y
+        );
+    }
+
+    @Override
+    public double getSpeedCof() {
+        return 1.7;
+    }
+
+    protected void setDirection(double dirX, double dirY){
+        double len = Math.sqrt(dirX * dirX + dirY * dirY);
+        if(len == 0)
+            return;
+        setFX(dirX / len);
+        setFY(dirY / len);
     }
 
     abstract void setStrategy();

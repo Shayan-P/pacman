@@ -33,7 +33,7 @@ public class GameMenu extends AbstractMenu {
     private CounterBar highScoreBar;
     private final List<Timeline> gameTimelines = new ArrayList<>();
     private final PlayPauseIcon playPauseIcon = new PlayPauseIcon();
-    private final ImageView exitIcon = new ImageView();
+    private final ExitIcon exitIcon = new ExitIcon();
     private static GameMenu instance;
     private boolean gameOverLock = true; // this is a lock for race condition
 
@@ -144,10 +144,6 @@ public class GameMenu extends AbstractMenu {
                     else
                         gameTimelines.forEach(Animation::stop);
                 });
-
-        exitIcon.setImage(new Image(getClass().getResource("/icons/exit.png").toExternalForm()));
-        exitIcon.setFitHeight(35);
-        exitIcon.setFitWidth(35);
 
         exitIcon.setOnMouseClicked(e->{
             if(playPauseIcon.isPlay()) {

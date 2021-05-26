@@ -80,7 +80,7 @@ abstract public class MovingEntity extends Entity {
 
     public void setFaceAnimation(){
         final AtomicInteger animationState = new AtomicInteger(0);
-        setLoop(new KeyFrame(Duration.millis(100), e-> {
+        setLoop(new KeyFrame(Duration.millis(240), e-> {
             if(getVX() == 0 && getVY() == 0) {
                 setRotate(0);
                 setImage(frontImages[animationState.get()]);

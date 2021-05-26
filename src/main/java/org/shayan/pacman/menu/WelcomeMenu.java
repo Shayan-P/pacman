@@ -49,6 +49,10 @@ public class WelcomeMenu extends AbstractMenu {
                 Utils.exit();
         } ));
 
+        menuItems.getChildren().add(new MenuItem("number of threads! ", ()->{
+            System.out.println(Thread.activeCount());
+        }));
+
         for(int i = 0; i < menuItems.getChildren().size(); i++){
             Node item = menuItems.getChildren().get(i);
             item.setTranslateX(-300);

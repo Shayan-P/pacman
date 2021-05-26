@@ -7,6 +7,7 @@ import javafx.util.Duration;
 import org.shayan.pacman.database.Settings;
 import org.shayan.pacman.game.entity.*;
 import org.shayan.pacman.game.entity.ai.AI;
+import org.shayan.pacman.game.entity.ai.BfsAI;
 import org.shayan.pacman.game.entity.ai.LineChaserAI;
 import org.shayan.pacman.game.event.EndOfRoundEvent;
 import org.shayan.pacman.game.event.PacmanWinsEvent;
@@ -55,7 +56,7 @@ public class GameWorld {
         } catch (Exception e){
             throw new Error("error in reading map");
         }
-        BLOCK_LENGTH = 960.0 / Math.min(gameMap.getWidth(), gameMap.getHeight());
+        BLOCK_LENGTH = 960.0 / Math.max(gameMap.getWidth(), gameMap.getHeight());
 
         mapWidth = gameMap.getWidth() * BLOCK_LENGTH;
         mapHeight = gameMap.getHeight() * BLOCK_LENGTH;
@@ -84,7 +85,7 @@ public class GameWorld {
         // todo change + eaten guys
         highestScore = Math.max(highestScore, eatenCoins * 5);
         if(User.getCurrentUser() != null)
-            User.getCurrentUser().updateScore(eatenCoins);
+            User.getCurrentUser().updateScore(eatenCoins * 5);
         if(coins.isEmpty()){
             lives += 1;
             GameMenu.getInstance().fireEvent(new PacmanWinsEvent());
@@ -108,7 +109,8 @@ public class GameWorld {
                     root.getChildren().add(this.pacman);
                 }
                 if(cell.equals(MapEntity.AI)){
-                    AI ai = new LineChaserAI(x, y);
+                    AI ai = new BfsAI(500, ais.size(), x, y);
+//                    AI ai = new LineChaserAI(x, y);
                     ai.activate();
                     root.getChildren().add(ai);
                     ais.add(ai);
@@ -143,6 +145,7 @@ public class GameWorld {
                 double x = BLOCK_LENGTH * i, y = BLOCK_LENGTH * j;
                 if (cell.equals(MapEntity.COIN)) {
                     Coin coin = new Coin(x, y);
+                    coin.activate();
                     root.getChildren().add(coin);
                     coins.add(coin);
                 }
@@ -203,5 +206,9 @@ public class GameWorld {
 
     public double getBlockLength() {
         return BLOCK_LENGTH;
+    }
+
+    public GameMap getGameMap() {
+        return gameMap;
     }
 }
