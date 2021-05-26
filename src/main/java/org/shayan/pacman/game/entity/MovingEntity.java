@@ -44,7 +44,7 @@ abstract public class MovingEntity extends Entity {
     }
 
     public void checkCollisionWithWall(){
-        for(Wall wall : GameWorld.getInstance().getWalls()){
+        for(Wall wall : world.getWalls()){
             if(willHaveCollision(wall)) {
                 if (willHaveCollisionX(wall))
                     vX = 0;
@@ -67,14 +67,14 @@ abstract public class MovingEntity extends Entity {
             setX(vX + getX());
             setY(vY + getY());
 
-            if(getX() > GameWorld.getInstance().getMapWidth())
+            if(getX() > world.getMapWidth())
                 setX(0);
             if(getX() < 0)
-                setX(GameWorld.getInstance().getMapWidth());
-            if(getY() > GameWorld.getInstance().getMapHeight())
+                setX(world.getMapWidth());
+            if(getY() > world.getMapHeight())
                 setY(0);
             if(getY() < 0)
-                setY(GameWorld.getInstance().getMapHeight());
+                setY(world.getMapHeight());
         }));
     }
 
@@ -105,8 +105,8 @@ abstract public class MovingEntity extends Entity {
         }
     }
 
-    public MovingEntity(Image[] frontImages, Image[] rightImages, double x, double y){
-        super(frontImages[0], x, y);
+    public MovingEntity(GameWorld world, Image[] frontImages, Image[] rightImages, double x, double y){
+        super(world, frontImages[0], x, y);
         this.frontImages = frontImages;
         this.rightImages = rightImages;
     }

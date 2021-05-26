@@ -9,13 +9,13 @@ import org.shayan.pacman.menu.GameMenu;
 public class Pacman extends MovingEntity {
     @Override
     public double getR() {
-        return 0.8 * GameWorld.getInstance().getBlockLength() / 2;
+        return 0.8 * world.getBlockLength() / 2;
     }
 
     private void collisionWithCoin(){
-        for(Coin coin: GameWorld.getInstance().getCoins()){
+        for(Coin coin: world.getCoins()){
             if(hasCollision(coin)) {
-                GameMenu.getInstance().fireEvent(new CoinEatEvent(coin));
+                world.fireEvent(new CoinEatEvent(coin));
             }
         }
     }
@@ -40,7 +40,7 @@ public class Pacman extends MovingEntity {
         return rightImages;
     }
 
-    public Pacman(double x, double y) {
-        super(getFrontImages(), getRightImages(), x, y);
+    public Pacman(GameWorld world, double x, double y) {
+        super(world, getFrontImages(), getRightImages(), x, y);
     }
 }

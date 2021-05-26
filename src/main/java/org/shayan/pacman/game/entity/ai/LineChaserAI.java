@@ -8,12 +8,12 @@ public class LineChaserAI extends AI {
     @Override
     void setStrategy() {
         setLoop(new KeyFrame(Duration.millis(50), e->{
-            setDirection(GameWorld.getInstance().getPacman().getX() - getX(), GameWorld.getInstance().getPacman().getY() - getY());
+            setDirection(world.getPacman().getX() - getX(), world.getPacman().getY() - getY());
         }));
     }
 
-    public LineChaserAI(int skinId, double x, double y){
-        super(skinId, x, y);
+    public LineChaserAI(GameWorld world, int skinId, double x, double y){
+        super(world, skinId, x, y);
         setStrategy();
     }
 }

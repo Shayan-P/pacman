@@ -32,7 +32,8 @@ public class MapDatabase {
     public static void saveTempMap() throws PacmanException {
         try {
             File file = new File("maps/tmp.txt");
-            file.renameTo(new File(getFreePath()));
+            if(!file.renameTo(new File(getFreePath())))
+                throw new PacmanException("can't move");
         } catch (Exception exception){
             throw new PacmanException("there is no recently random generated map!");
         }

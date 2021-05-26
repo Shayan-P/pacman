@@ -1,77 +1,66 @@
 package org.shayan.pacman.menu;
 
-import javafx.animation.Animation;
-import javafx.animation.KeyFrame;
 import javafx.animation.PauseTransition;
-import javafx.animation.Timeline;
-import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
 import javafx.scene.paint.*;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import org.shayan.pacman.database.MapDatabase;
-import org.shayan.pacman.database.Settings;
+import org.shayan.pacman.database.History;
 import org.shayan.pacman.game.GameWorld;
 import org.shayan.pacman.game.event.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class GameMenu extends AbstractMenu {
     private Stage stage;
     private Scene scene;
     private Pane root;
+    private GameWorld gameWorld;
     private HBox navBar;
     private Pane gameBar;
     private ShapeBar lifeBar;
     private CounterBar coinBar;
     private CounterBar highScoreBar;
-    private final List<Timeline> gameTimelines = new ArrayList<>();
     private final PlayPauseIcon playPauseIcon = new PlayPauseIcon();
     private final ExitIcon exitIcon = new ExitIcon();
-    private static GameMenu instance;
     private boolean gameOverLock = true; // this is a lock for race condition
-
-    public static GameMenu getInstance(){
-        return instance;
-    }
+    private boolean finalFinished = false;
 
     public GameMenu(){
         super();
-        instance = this;
+        History.setLastGameMenu(this);
     }
 
     public void startNewGame(){
         gameOverLock = false;
         lifeBar.refresh();
-        GameWorld.getInstance().startNewRound();
+        gameWorld.startNewRound();
         coinBar.refresh();
         MediaPlayer.play(MediaPlayer.SoundType.START);
         PauseTransition pt = new PauseTransition(Duration.seconds(5));
-        pt.setOnFinished(e->gameTimelines.forEach(Animation::play));
+        pt.setOnFinished(e->gameWorld.startMoving());
         pt.play();
     }
     public void endOfTheGame(){
         if(gameOverLock)
             return;
         gameOverLock = true;
-        gameTimelines.forEach(Animation::stop);
-        if(GameWorld.getInstance().getLives() <= 0) {
+        gameWorld.stopMoving();
+        if(gameWorld.getLives() <= 0) {
             BorderPane pane = new BorderPane();
             pane.setLayoutX(Width/2 - 100);
             pane.setLayoutY(Height/2 - 100);
             gameBar.getChildren().add(pane);
 
-            // instance = null is for clearing the future access
-            new AlertBox().display(pane, "Continue?",
-                    ()->{ new GameMenu().start(stage); },
-                    ()->{ instance = null; new WelcomeMenu().start(stage); }
-                    );
+            finalFinished = true;
+
+            new AlertBox().display(
+                    pane,
+                    "Continue?",
+                    ()->new GameMenu().start(stage),
+                    ()->new WelcomeMenu().start(stage)
+            );
         } else {
             PauseTransition pt = new PauseTransition(Duration.seconds(3));
             pt.setOnFinished(e -> startNewGame());
@@ -82,23 +71,23 @@ public class GameMenu extends AbstractMenu {
     private void addControllers(){
         scene.setOnKeyPressed(e->{
             if(e.getCode().equals(KeyCode.LEFT))
-                GameWorld.getInstance().getPacman().setFX(-1);
+                gameWorld.getPacman().setFX(-1);
             if(e.getCode().equals(KeyCode.RIGHT))
-                GameWorld.getInstance().getPacman().setFX(1);
+                gameWorld.getPacman().setFX(1);
             if(e.getCode().equals(KeyCode.UP))
-                GameWorld.getInstance().getPacman().setFY(-1);
+                gameWorld.getPacman().setFY(-1);
             if(e.getCode().equals(KeyCode.DOWN))
-                GameWorld.getInstance().getPacman().setFY(1);
+                gameWorld.getPacman().setFY(1);
         });
         scene.setOnKeyReleased(e->{
             if(e.getCode().equals(KeyCode.LEFT))
-                GameWorld.getInstance().getPacman().setFX(0);
+                gameWorld.getPacman().setFX(0);
             if(e.getCode().equals(KeyCode.RIGHT))
-                GameWorld.getInstance().getPacman().setFX(0);
+                gameWorld.getPacman().setFX(0);
             if(e.getCode().equals(KeyCode.UP))
-                GameWorld.getInstance().getPacman().setFY(0);
+                gameWorld.getPacman().setFY(0);
             if(e.getCode().equals(KeyCode.DOWN))
-                GameWorld.getInstance().getPacman().setFY(0);
+                gameWorld.getPacman().setFY(0);
         });
     }
     public void addBackGroundColor(){
@@ -113,42 +102,38 @@ public class GameMenu extends AbstractMenu {
         navBar.setBorder(new Border(new BorderStroke(Color.BROWN, BorderStrokeStyle.SOLID, new CornerRadii(1), new BorderWidths(3), Insets.EMPTY)));
     }
 
-    public void addGameLoop(Timeline timeline){
-        gameTimelines.add(timeline);
-    }
-
     public void addNavBarItems(){
         lifeBar = new ShapeBar("/icons/heart.png") {
             @Override
             int getNumber() {
-                return GameWorld.getInstance().getLives();
+                return gameWorld.getLives();
             }
         };
         coinBar = new CounterBar("/icons/coin.png") {
             @Override
             int getNumber() {
-                return GameWorld.getInstance().getEatenCoins();
+                return gameWorld.getEatenCoins();
             }
         };
         highScoreBar = new CounterBar(new BeautifulText("Highest Score:", Color.BLACK, 27)) {
             @Override
             int getNumber() {
-                return GameWorld.getInstance().getHighestScore();
+                return gameWorld.getHighestScore();
             }
         };
         playPauseIcon.setOnMouseClicked(e-> {
 //            MediaPlayer.play(MediaPlayer.SoundType.TICK);
                     playPauseIcon.toggle();
                     if (playPauseIcon.isPlay())
-                        gameTimelines.forEach(Animation::play);
+                        gameWorld.startMoving();
                     else
-                        gameTimelines.forEach(Animation::stop);
+                        gameWorld.stopMoving();
                 });
 
         exitIcon.setOnMouseClicked(e->{
             if(playPauseIcon.isPlay()) {
                 playPauseIcon.toggle();
-                gameTimelines.forEach(Animation::stop);
+                gameWorld.stopMoving();
             }
             new WelcomeMenu().start(stage);
         });
@@ -159,11 +144,11 @@ public class GameMenu extends AbstractMenu {
 
     private void addCustomEventHandlers(){
         this.gameBar.addEventHandler(GhostEatEvent.MY_TYPE, e->{
-            GameWorld.getInstance().pacmanAndAIIntersect(e.getAI());
+            gameWorld.pacmanAndAIIntersect(e.getAI());
         });
         this.gameBar.addEventHandler(CoinEatEvent.MY_TYPE, e->{
             MediaPlayer.play(MediaPlayer.SoundType.COIN);
-            GameWorld.getInstance().pacmanEatsCoin(e.getCoin());
+            gameWorld.pacmanEatsCoin(e.getCoin());
             coinBar.refresh();
             highScoreBar.refresh();
         });
@@ -177,16 +162,13 @@ public class GameMenu extends AbstractMenu {
             endOfTheGame();
         });
     }
-    public void fireEvent(Event e){
-        this.gameBar.fireEvent(e);
-    }
 
     @Override
     public void start(Stage stage) {
         this.stage = stage;
         stage.setScene(this.scene = new Scene(this.root = new VBox(), Width, Height));
         this.root.getChildren().addAll(this.navBar = new HBox(), this.gameBar = new Pane());
-        new GameWorld(this.gameBar);
+        gameWorld = new GameWorld(this.gameBar);
         addBackGroundColor();
         addNavBarItems();
         addControllers();
@@ -198,5 +180,9 @@ public class GameMenu extends AbstractMenu {
     public void resumeStart(Stage stage){
         this.stage = stage;
         stage.setScene(this.scene);
+    }
+
+    public boolean isFinalFinished(){
+        return finalFinished;
     }
 }

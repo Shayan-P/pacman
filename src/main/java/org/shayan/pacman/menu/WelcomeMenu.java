@@ -10,6 +10,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import org.shayan.pacman.database.History;
 import org.shayan.pacman.game.entity.Pacman;
 import org.shayan.pacman.model.User;
 
@@ -19,8 +20,8 @@ public class WelcomeMenu extends AbstractMenu {
         root.getChildren().add(menuItems);
         menuItems.setTranslateX(Width/2);
         menuItems.setTranslateY(Height/3);
-        if(GameMenu.getInstance() != null)
-            menuItems.getChildren().add(new MenuItem("resume game", ()->{ GameMenu.getInstance().resumeStart(stage); }));
+        if(History.getLastGameMenu() != null)
+            menuItems.getChildren().add(new MenuItem("resume game", ()->{ History.getLastGameMenu().resumeStart(stage); }));
         menuItems.getChildren().add(new MenuItem("new game", ()->{ new GameMenu().start(stage); }));
         menuItems.getChildren().add(new MenuItem("scoreboard", ()->{ new ScoreboardMenu().start(stage); }));
         menuItems.getChildren().add(new MenuItem("settings", ()->{ new SettingsMenu().start(stage); }));
@@ -48,10 +49,6 @@ public class WelcomeMenu extends AbstractMenu {
             if(new AlertBox().display("Are you sure you want to exit?"))
                 Utils.exit();
         } ));
-
-        menuItems.getChildren().add(new MenuItem("number of threads! ", ()->{
-            System.out.println(Thread.activeCount());
-        }));
 
         for(int i = 0; i < menuItems.getChildren().size(); i++){
             Node item = menuItems.getChildren().get(i);
@@ -99,7 +96,7 @@ public class WelcomeMenu extends AbstractMenu {
         double destinationY = Height/2;
 
         public DummyPacman(double x, double y) {
-            super(x, y);
+            super(null, x, y);
         }
 
         @Override

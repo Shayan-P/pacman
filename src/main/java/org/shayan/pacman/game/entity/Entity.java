@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 abstract public class Entity extends ImageView {
     abstract public double getR();
     private final List<Timeline> allTimelines = new ArrayList<>();
-
+    protected final GameWorld world;
     public double getCenterX(){
         return getX() + getR();
     }
@@ -43,7 +43,7 @@ abstract public class Entity extends ImageView {
         Timeline timeline = new Timeline(keyFrame);
         timeline.setCycleCount(Timeline.INDEFINITE);
         allTimelines.add(timeline);
-        GameMenu.getInstance().addGameLoop(timeline);
+        world.addGameLoop(timeline);
     }
 
     public void stopAllTimelines(){
@@ -63,8 +63,9 @@ abstract public class Entity extends ImageView {
         setY(y);
     }
 
-    public Entity(Image initImage, double x, double y){
+    public Entity(GameWorld world, Image initImage, double x, double y){
         super(initImage);
+        this.world = world;
         setImageSize();
         setInitialPosition(x, y);
     }

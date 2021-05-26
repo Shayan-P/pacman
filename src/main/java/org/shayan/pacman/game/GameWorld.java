@@ -1,17 +1,15 @@
 package org.shayan.pacman.game;
 
-import javafx.animation.PauseTransition;
-import javafx.scene.Node;
+import javafx.animation.Animation;
+import javafx.animation.Timeline;
+import javafx.event.Event;
 import javafx.scene.layout.Pane;
-import javafx.util.Duration;
 import org.shayan.pacman.database.Settings;
 import org.shayan.pacman.game.entity.*;
 import org.shayan.pacman.game.entity.ai.AI;
 import org.shayan.pacman.game.entity.ai.BfsAI;
-import org.shayan.pacman.game.entity.ai.LineChaserAI;
 import org.shayan.pacman.game.event.EndOfRoundEvent;
 import org.shayan.pacman.game.event.PacmanWinsEvent;
-import org.shayan.pacman.menu.GameMenu;
 import org.shayan.pacman.model.GameMap;
 import org.shayan.pacman.model.User;
 
@@ -19,7 +17,6 @@ import java.io.*;
 import java.util.*;
 
 public class GameWorld {
-    private static GameWorld instance;
     private final List<Wall> walls = new ArrayList<>();
     private final List<AI> ais = new ArrayList<>();
     private final List<Coin> coins = new ArrayList<>();
@@ -34,6 +31,7 @@ public class GameWorld {
     private int lives = Settings.getDefaultPacmanHearts();
     private int highestScore;
     private boolean isFirstRound;
+    private final List<Timeline> gameTimelines = new ArrayList<>();
 
     {
         isFirstRound = true;
@@ -41,14 +39,7 @@ public class GameWorld {
         eatenCoins = 0;
     }
 
-    public static GameWorld getInstance(){
-        if(instance == null)
-            throw new Error("no instance!");
-        return instance;
-    }
-
     public GameWorld(Pane root){
-        instance = this;
         this.root = root;
 
         try {
@@ -88,14 +79,14 @@ public class GameWorld {
             User.getCurrentUser().updateScore(eatenCoins * 5);
         if(coins.isEmpty()){
             lives += 1;
-            GameMenu.getInstance().fireEvent(new PacmanWinsEvent());
+            fireEvent(new PacmanWinsEvent());
         }
     }
     public void pacmanAndAIIntersect(AI ai){
         // todo add super mode
 
         lives -= 1;
-        GameMenu.getInstance().fireEvent(new EndOfRoundEvent());
+        fireEvent(new EndOfRoundEvent());
     }
 
     private void loadPacmanAndAIs(){
@@ -104,12 +95,12 @@ public class GameWorld {
                 MapEntity cell = gameMap.getCells()[i][j];
                 double x = BLOCK_LENGTH * i, y = BLOCK_LENGTH * j;
                 if(cell.equals(MapEntity.PACMAN)) {
-                    this.pacman = new Pacman(x, y);
+                    this.pacman = new Pacman(this, x, y);
                     this.pacman.activate();
                     root.getChildren().add(this.pacman);
                 }
                 if(cell.equals(MapEntity.AI)){
-                    AI ai = new BfsAI(500, ais.size(), x, y);
+                    AI ai = new BfsAI(this, 500, ais.size(), x, y);
 //                    AI ai = new LineChaserAI(x, y);
                     ai.activate();
                     root.getChildren().add(ai);
@@ -144,7 +135,13 @@ public class GameWorld {
                 MapEntity cell = gameMap.getCells()[i][j];
                 double x = BLOCK_LENGTH * i, y = BLOCK_LENGTH * j;
                 if (cell.equals(MapEntity.COIN)) {
-                    Coin coin = new Coin(x, y);
+                    Coin coin = new Coin(this, x, y);
+                    coin.activate();
+                    root.getChildren().add(coin);
+                    coins.add(coin);
+                }
+                if (cell.equals(MapEntity.SPECIAL_COIN)) {
+                    SpecialCoin coin = new SpecialCoin(this, x, y);
                     coin.activate();
                     root.getChildren().add(coin);
                     coins.add(coin);
@@ -158,7 +155,7 @@ public class GameWorld {
                 MapEntity cell = gameMap.getCells()[i][j];
                 double x = BLOCK_LENGTH * i, y = BLOCK_LENGTH * j;
                 if(cell.equals(MapEntity.WALL)){
-                    Wall wall = new Wall(x, y);
+                    Wall wall = new Wall(this, x, y);
                     root.getChildren().add(wall);
                     walls.add(wall);
                 }
@@ -210,5 +207,20 @@ public class GameWorld {
 
     public GameMap getGameMap() {
         return gameMap;
+    }
+
+    public void fireEvent(Event e){
+        this.root.fireEvent(e);
+    }
+
+    public void addGameLoop(Timeline timeline){
+        gameTimelines.add(timeline);
+    }
+
+    public void  stopMoving(){
+        gameTimelines.forEach(Animation::stop);
+    }
+    public void startMoving(){
+        gameTimelines.forEach(Animation::play);
     }
 }

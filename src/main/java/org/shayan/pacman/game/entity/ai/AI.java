@@ -9,12 +9,12 @@ import org.shayan.pacman.menu.GameMenu;
 abstract public class AI extends MovingEntity {
     @Override
     public double getR() {
-        return 0.9 * GameWorld.getInstance().getBlockLength() / 2;
+        return 0.9 * world.getBlockLength() / 2;
     }
 
     private void collisionWithPacman(){
-        if (this.getManhattanDistance(GameWorld.getInstance().getPacman()) <= 4) {
-            GameMenu.getInstance().fireEvent(new GhostEatEvent(this));
+        if (this.getManhattanDistance(world.getPacman()) <= 4) {
+            world.fireEvent(new GhostEatEvent(this));
         }
     }
 
@@ -23,8 +23,9 @@ abstract public class AI extends MovingEntity {
         collisionWithPacman();
     }
 
-    public AI(int skinId, double x, double y){
+    public AI(GameWorld world, int skinId, double x, double y){
         super(
+                world,
                 new Image[]{getImageInResource(String.format("/ais/%d/front.png", skinId))},
                 new Image[]{getImageInResource(String.format("/ais/%d/right.png", skinId))},
                 x, y

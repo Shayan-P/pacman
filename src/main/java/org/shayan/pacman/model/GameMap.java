@@ -33,7 +33,9 @@ public class GameMap {
     }
 
     // this is random generator constructor!
-    public GameMap(int n, int m){
+    public GameMap(int m){
+        int n = m + rnd.nextInt(4);
+
         width = n;
         height = m;
         cells = new MapEntity[width][height];
@@ -75,30 +77,24 @@ public class GameMap {
         }
 
         Pair<Integer, Integer> pacman = list.get(rnd.nextInt(list.size()));
+        cells[pacman.getKey()][pacman.getValue()] = MapEntity.PACMAN;
         list.remove(pacman);
 
-        Pair<Integer, Integer> ai1 = list.get(rnd.nextInt(list.size()));
-        list.remove(ai1);
-
-        Pair<Integer, Integer> ai2 = list.get(rnd.nextInt(list.size()));
-        list.remove(ai2);
-
-        Pair<Integer, Integer> ai3 = list.get(rnd.nextInt(list.size()));
-        list.remove(ai3);
-
-        Pair<Integer, Integer> ai4 = list.get(rnd.nextInt(list.size()));
-        list.remove(ai4);
-
-        cells[pacman.getKey()][pacman.getValue()] = MapEntity.PACMAN;
-        cells[ai1.getKey()][ai1.getValue()] = MapEntity.AI;
-        cells[ai2.getKey()][ai2.getValue()] = MapEntity.AI;
-        cells[ai3.getKey()][ai3.getValue()] = MapEntity.AI;
-        cells[ai4.getKey()][ai4.getValue()] = MapEntity.AI;
+        for(int i = 0; i < 4; i++) {
+            Pair<Integer, Integer> ai = list.get(rnd.nextInt(list.size()));
+            cells[ai.getKey()][ai.getValue()] = MapEntity.AI;
+            list.remove(ai);
+        }
+        for(int i = 0; i < 4; i++){
+            Pair<Integer, Integer> spc = list.get(rnd.nextInt(list.size()));
+            cells[spc.getKey()][spc.getValue()] = MapEntity.SPECIAL_COIN;
+            list.remove(spc);
+        }
     }
 
     // this is another random generator
     public GameMap(){
-        this(rnd.nextInt(16) + 20, rnd.nextInt(16) + 20);
+        this(rnd.nextInt(16) + 20);
     }
 
     public int getWidth() {
