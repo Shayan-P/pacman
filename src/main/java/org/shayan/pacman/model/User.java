@@ -68,7 +68,7 @@ public class User implements Comparable<User>, Serializable {
     @Override
     public int compareTo(User user) {
         if(this.score != user.score)
-            return this.score - user.score;
+            return user.score - this.score;
         if(this.lastTimeChange != user.lastTimeChange)
             return this.lastTimeChange - user.lastTimeChange;
         return this.username.compareTo(user.username);

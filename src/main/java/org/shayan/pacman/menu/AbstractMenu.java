@@ -11,8 +11,8 @@ import org.shayan.pacman.extendedNodes.BeautifulButton;
 import org.shayan.pacman.extendedNodes.MenuTitle;
 
 abstract public class AbstractMenu extends Application {
-    protected final double Width = 1000;
-    protected final double Height = 1000;
+    protected double Width = 1000;
+    protected double Height = 1000;
     protected Stage stage;
     protected Scene scene;
     protected Pane root;

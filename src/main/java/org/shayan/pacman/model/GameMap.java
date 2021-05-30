@@ -21,13 +21,13 @@ public class GameMap {
     public GameMap(FileReader reader) {
         Scanner scanner = new Scanner(reader);
         Integer[] tmp = read(scanner);
-        width = tmp[0];
-        height = tmp[1];
+        width = tmp[1];
+        height = tmp[0];
         cells = new MapEntity[width][height];
-        for (int i = 0; i < width; i++) {
+        for (int i = 0; i < height; i++) {
             tmp = read(scanner);
-            for (int j = 0; j < height; j++) {
-                cells[i][j] = MapEntity.getTypeById(tmp[j]);
+            for (int j = 0; j < width; j++) {
+                cells[j][i] = MapEntity.getTypeById(tmp[j]);
             }
         }
     }

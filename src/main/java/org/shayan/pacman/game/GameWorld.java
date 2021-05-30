@@ -11,6 +11,7 @@ import org.shayan.pacman.database.Settings;
 import org.shayan.pacman.game.entity.*;
 import org.shayan.pacman.game.entity.ai.*;
 import org.shayan.pacman.game.event.EndOfRoundEvent;
+import org.shayan.pacman.game.event.PacmanSuperManEvent;
 import org.shayan.pacman.game.event.PacmanWinsEvent;
 import org.shayan.pacman.model.GameMap;
 import org.shayan.pacman.model.User;
@@ -36,6 +37,7 @@ public class GameWorld {
     private boolean isFirstRound;
     private final List<Timeline> gameTimelines = new ArrayList<>();
     private final List<Timeline> waitingTasks = new ArrayList<>();
+    private int eatenGhostsInOneRow = 0;
 
     {
         isFirstRound = true;
@@ -60,6 +62,15 @@ public class GameWorld {
         loadWalls();
         loadCoins();
         loadPacmanAndAIs();
+
+        addListeners();
+    }
+
+    void addListeners(){
+        this.root.addEventHandler(PacmanSuperManEvent.MY_TYPE, e->{
+            if(!e.isSuperMan() && !pacman.isSuperManMode())
+                eatenGhostsInOneRow = 0;
+        });
     }
 
     public void finishRemainingTasks(){
@@ -101,7 +112,8 @@ public class GameWorld {
     }
     public void pacmanAndAIIntersect(AI ai){
         if(pacman.isSuperManMode()){
-            addScore(200);
+            eatenGhostsInOneRow += 1;
+            addScore(200 * eatenGhostsInOneRow);
             spawnAIRandomPlace(ai);
         } else {
             lives -= 1;
@@ -173,7 +185,7 @@ public class GameWorld {
     private void spawnAIRandomPlace(AI ai){
         List<Pair<Double, Double>> poses = getAISpawnPositions();
         Pair<Double, Double> pos = poses.get(new Random().nextInt(poses.size()));
-        restartMovingEntity(ai, pos.getKey(), pos.getValue(), Duration.seconds(6));
+        restartMovingEntity(ai, pos.getKey(), pos.getValue(), Duration.seconds(2));
     }
 
     private void restartMovingEntity(MovingEntity entity, double x, double y, Duration wait){

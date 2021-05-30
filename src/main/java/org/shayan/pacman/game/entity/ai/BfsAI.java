@@ -93,13 +93,8 @@ public class BfsAI extends AI {
                 double dirYR = nowYR - getCenterY();
                 setDirection(-dx[bfsDad[nowX][nowY]], -dy[bfsDad[nowX][nowY]]);
 
-                boolean collision = false;
-                for(Wall wall : world.getWalls()){
-                    collision|= willHaveCollision(wall);
-                }
-                if(collision){
+                if(willHaveCollisionWithWalls())
                     setDirection(dirXR, dirYR);
-                }
             }
         }));
     }

@@ -12,6 +12,7 @@ import org.shayan.pacman.extendedNodes.*;
 import org.shayan.pacman.extra.AlertBox;
 import org.shayan.pacman.extra.CentralMediaPlayer;
 import org.shayan.pacman.game.GameWorld;
+import org.shayan.pacman.game.entity.ai.AI;
 import org.shayan.pacman.game.event.*;
 
 public class GameMenu extends AbstractMenu {
@@ -21,7 +22,7 @@ public class GameMenu extends AbstractMenu {
     private GameWorld gameWorld;
     private HBox navBar;
     private Pane gameBar;
-    private ShapeBar lifeBar;
+    private CounterBar lifeBar;
     private CounterBar coinBar;
     private CounterBar scoreBar;
     private CounterBar highScoreBar;
@@ -108,7 +109,7 @@ public class GameMenu extends AbstractMenu {
     }
 
     public void addNavBarItems(){
-        lifeBar = new ShapeBar("/icons/heart.png") {
+        lifeBar = new CounterBar("/icons/heart.png") {
             @Override
             public int getNumber() {
                 return gameWorld.getLives();
@@ -149,8 +150,6 @@ public class GameMenu extends AbstractMenu {
             }
             new WelcomeMenu().start(stage);
         });
-
-        navBar.setSpacing(50);
         navBar.getChildren().addAll(lifeBar, coinBar, scoreBar, highScoreBar, playPauseIcon, exitIcon);
     }
 
@@ -163,8 +162,8 @@ public class GameMenu extends AbstractMenu {
 
     private void addCustomEventHandlers(){
         this.gameBar.addEventHandler(GhostEatEvent.MY_TYPE, e->{
-//            if(gameWorld.getPacman().isSuperManMode())
-                // todo play some music
+            if(gameWorld.getPacman().isSuperManMode())
+                CentralMediaPlayer.play(CentralMediaPlayer.SoundType.GHOST_EATING);
             gameWorld.pacmanAndAIIntersect(e.getAI());
             refreshNavBar();
         });
@@ -179,15 +178,20 @@ public class GameMenu extends AbstractMenu {
             endOfTheGame();
         });
         this.gameBar.addEventHandler(PacmanWinsEvent.MY_TYPE, e->{
+            CentralMediaPlayer.play(CentralMediaPlayer.SoundType.WIN);
             refreshNavBar();
             endOfTheGame();
         });
         this.gameBar.addEventHandler(PacmanSuperManEvent.MY_TYPE, e->{
-            if(e.isSuperMan())
+            if(e.isSuperMan()) {
+                CentralMediaPlayer.play(CentralMediaPlayer.SoundType.ENERGY_EATING);
+                gameWorld.getAIs().forEach(AI::beScared);
                 addSpecialBackgroundColor();
-            else
+            }
+            else {
+                gameWorld.getAIs().forEach(AI::beNormal);
                 addNormalBackGroundColor();
-            // todo play some music
+            }
             refreshNavBar();
         });
     }
@@ -195,14 +199,20 @@ public class GameMenu extends AbstractMenu {
     @Override
     public void start(Stage stage) {
         this.stage = stage;
-        stage.setScene(this.scene = new Scene(this.root = new VBox(), Width, Height));
-        this.root.getChildren().addAll(this.navBar = new HBox(), this.gameBar = new Pane());
+        this.root = new VBox(this.navBar = new HBox(35), this.gameBar = new Pane());
+
         gameWorld = new GameWorld(this.gameBar);
+        Width = gameWorld.getMapWidth();
+        Height = gameWorld.getMapHeight() + 80;
+
+        this.scene = new Scene(this.root, Width, Height);
+
         addNormalBackGroundColor();
         addNavBarItems();
         addControllers();
         addCustomEventHandlers();
         startNewGame();
+        stage.setScene(this.scene);
         stage.show();
     }
 

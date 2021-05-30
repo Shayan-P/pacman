@@ -8,7 +8,6 @@ import org.shayan.pacman.game.GameWorld;
 import java.util.concurrent.atomic.AtomicInteger;
 
 abstract public class MovingEntity extends Entity {
-    protected double vX = 0, vY = 0;
     private double fX = 0, fY = 0;
 
     protected Image[] frontImages, rightImages;
@@ -33,48 +32,46 @@ abstract public class MovingEntity extends Entity {
         return fY * getSpeedCof();
     }
 
-    public boolean willHaveCollision(Entity e){
-        return !(Math.abs(getCenterX() + getVX() - e.getCenterX()) >= e.getR() + getR() || Math.abs(getCenterY() + getVY() - e.getCenterY()) >= e.getR() + getR());
-    }
-    public boolean willHaveCollisionX(Entity e){
-        return !(Math.abs(getCenterX() + getVX() - e.getCenterX()) >= e.getR() + getR() || Math.abs(getCenterY() - e.getCenterY()) >= e.getR() + getR());
-    }
-    public boolean willHaveCollisionY(Entity e){
-        return !(Math.abs(getCenterX() - e.getCenterX()) >= e.getR() + getR() || Math.abs(getCenterY() + getVY() - e.getCenterY()) >= e.getR() + getR());
+    private void move(double rX, double rY) {
+        setX(rX + getX());
+        setY(rY + getY());
+
+        if(getX() > world.getMapWidth())
+            setX(getX() - world.getMapWidth());
+        if(getX() < 0)
+            setX(getX() + world.getMapWidth());
+        if(getY() > world.getMapHeight())
+            setY(getY() - world.getMapHeight());
+        if(getY() < 0)
+            setY(getY() + world.getMapHeight());
     }
 
-    public void checkCollisionWithWall(){
-        for(Wall wall : world.getWalls()){
-            if(willHaveCollision(wall)) {
-                if (willHaveCollisionX(wall))
-                    vX = 0;
-                if (willHaveCollisionY(wall))
-                    vY = 0;
-            }
-        }
+    public boolean hasCollisionWithWalls(){
+        return world.getWalls().stream().anyMatch(this::hasCollision);
+    }
+
+    public boolean willHaveCollisionWithWalls(){
+        move(getVX(), getVY());
+        boolean ret = hasCollisionWithWalls();
+        move(-getVX(), -getVY());
+        return ret;
+    }
+
+    public void moveConsideringWalls(){
+        move(getVX(), 0);
+        if(hasCollisionWithWalls())
+            move(-getVX(), 0);
+        move(0, getVY());
+        if(hasCollisionWithWalls())
+            move(0, -getVY());
     }
 
     abstract protected void conditionsInMovement();
 
     public void setWalkMovementAnimation(){
         setLoop(new KeyFrame(Duration.millis(10), e->{
-            vX = getVX();
-            vY = getVY();
-
-            checkCollisionWithWall();
+            moveConsideringWalls();
             conditionsInMovement();
-
-            setX(vX + getX());
-            setY(vY + getY());
-
-            if(getX() > world.getMapWidth())
-                setX(0);
-            if(getX() < 0)
-                setX(world.getMapWidth());
-            if(getY() > world.getMapHeight())
-                setY(0);
-            if(getY() < 0)
-                setY(world.getMapHeight());
         }));
     }
 

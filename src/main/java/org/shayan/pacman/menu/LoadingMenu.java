@@ -11,6 +11,8 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.shayan.pacman.extendedNodes.BeautifulText;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class LoadingMenu extends AbstractMenu {
     private final BeautifulText shayan = new BeautifulText("Shayan", Color.DARKBLUE, 70);
     private final BeautifulText pardis = new BeautifulText("Pardis", Color.DARKBLUE, 75);
@@ -33,12 +35,12 @@ public class LoadingMenu extends AbstractMenu {
             pardisMove.play();
         });
         pardisMove.setOnFinished(e->{
+            shayan.setEffect(new Glow(10));
+            pardis.setEffect(new Glow(10));
             root.getChildren().add(presents);
             presentMove.play();
         });
         presentMove.setOnFinished(e->{
-            shayan.setEffect(new Glow(10));
-            pardis.setEffect(new Glow(10));
             pauseThen(Duration.seconds(1), ()->{
                 new WelcomeMenu().start(stage);
             }).play();

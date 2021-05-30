@@ -2,14 +2,10 @@ package org.shayan.pacman.database;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import org.shayan.pacman.menu.GameMenu;
 import org.shayan.pacman.model.PacmanException;
 import org.shayan.pacman.model.User;
 
 import java.io.*;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -17,7 +13,7 @@ import java.util.List;
 public class Settings {
     static String DefaultMapPath;
     static final String databasePath = "database/db.dat";
-    static BooleanProperty soundIsOn = new SimpleBooleanProperty(false);
+    static BooleanProperty soundIsOn = new SimpleBooleanProperty(true);
     static int gameDifficulty = 1;
     static int favoritePacmanId = 1;
     static int defaultPacmanHearts = 3;

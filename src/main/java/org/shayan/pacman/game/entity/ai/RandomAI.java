@@ -11,9 +11,28 @@ public class RandomAI extends AI {
 
     @Override
     void setStrategy() {
-        setLoop(new KeyFrame(Duration.millis(100), e->{
-            while(world.getWalls().stream().anyMatch(this::willHaveCollision))
+        setLoop(new KeyFrame(Duration.millis(800), e->{
+            int tries = 10;
+            while(((getVX() == 0 && getVY() == 0) || willHaveCollisionWithWalls()) && tries > 0) {
                 setDirection(rnd.nextDouble() % 1, rnd.nextDouble() % 1);
+                tries--;
+            }
+            if(willHaveCollisionWithWalls())
+                setDirection(1, 0);
+            else
+                return;
+            if(willHaveCollisionWithWalls())
+                setDirection(-1, 0);
+            else
+                return;
+            if(willHaveCollisionWithWalls())
+                setDirection(0, 1);
+            else
+                return;
+            if(willHaveCollisionWithWalls())
+                setDirection(0, -1);
+            else
+                return;
         }));
     }
 

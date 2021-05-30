@@ -4,9 +4,10 @@ import javafx.scene.image.Image;
 import org.shayan.pacman.game.GameWorld;
 import org.shayan.pacman.game.entity.MovingEntity;
 import org.shayan.pacman.game.event.GhostEatEvent;
-import org.shayan.pacman.menu.GameMenu;
 
 abstract public class AI extends MovingEntity {
+    private int skinId;
+
     @Override
     public double getR() {
         return 0.9 * world.getBlockLength() / 2;
@@ -23,13 +24,26 @@ abstract public class AI extends MovingEntity {
         collisionWithPacman();
     }
 
+    private void changeSkin(int skinId){
+        rightImages = new Image[]{getImageInResource(String.format("/ais/%d/right.png", skinId))};
+        frontImages = new Image[]{getImageInResource(String.format("/ais/%d/front.png", skinId))};
+    }
+
+    public void beScared(){
+        changeSkin(4);
+    }
+    public void beNormal(){
+        changeSkin(this.skinId);
+    }
+
     public AI(GameWorld world, int skinId, double x, double y){
         super(
                 world,
-                new Image[]{getImageInResource(String.format("/ais/%d/front.png", skinId))},
                 new Image[]{getImageInResource(String.format("/ais/%d/right.png", skinId))},
+                new Image[]{getImageInResource(String.format("/ais/%d/front.png", skinId))},
                 x, y
         );
+        this.skinId = skinId;
     }
 
     @Override

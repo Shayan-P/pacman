@@ -17,6 +17,8 @@ public class CentralMediaPlayer {
     private static final AudioClip death = new AudioClip(CentralMediaPlayer.class.getResource("/audio/death.wav").toExternalForm());
     private static final AudioClip startOfGame = new AudioClip(CentralMediaPlayer.class.getResource("/audio/start-of-game.wav").toExternalForm());
     private static final AudioClip win = new AudioClip(CentralMediaPlayer.class.getResource("/audio/win.wav").toExternalForm());
+    private static final AudioClip ghostEating = new AudioClip(CentralMediaPlayer.class.getResource("/audio/ghost-eating.wav").toExternalForm());
+    private static final AudioClip energyEating = new AudioClip(CentralMediaPlayer.class.getResource("/audio/energy-eating.wav").toExternalForm());
     private static final MediaPlayer background = new MediaPlayer(new Media(CentralMediaPlayer.class.getResource("/audio/background.wav").toExternalForm()));
     private static final SimpleBooleanProperty weAreInGamePlay = new SimpleBooleanProperty(false);
 
@@ -34,7 +36,7 @@ public class CentralMediaPlayer {
     }
 
     public enum SoundType{
-        COIN(coinEating), DEATH(death), START(startOfGame), WIN(win);
+        COIN(coinEating), DEATH(death), START(startOfGame), WIN(win), GHOST_EATING(ghostEating), ENERGY_EATING(energyEating);
         private final AudioClip clip;
         SoundType(AudioClip clip){
             this.clip = clip;
@@ -43,15 +45,13 @@ public class CentralMediaPlayer {
             return clip;
         }
     }
-
-    public static boolean isPlaying(){
-        return coinEating.isPlaying() || death.isPlaying() || startOfGame.isPlaying() || win.isPlaying();
-    }
     private static void stopAll(){
         coinEating.stop();
         death.stop();
         startOfGame.stop();
         win.stop();
+        ghostEating.stop();
+        energyEating.stop();
     }
     public static void play(SoundType type){
         if(Settings.isSoundOn()) {

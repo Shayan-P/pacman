@@ -24,9 +24,12 @@ public class ScoreboardMenu extends AbstractMenu {
         userItems.add(new BeautifulText("user", Color.AZURE, 30), 0, 0);
         userItems.add(new BeautifulText("score", Color.AZURE, 30), 1, 0);
 
-        for(int i = 0; i < userList.size(); i++){
+        int lastCount = 0;
+        for(int i = 0; i < Math.min(10, userList.size()); i++){
+            int count = (i == 0 || userList.get(i).getScore() != userList.get(i-1).getScore() ? i : lastCount);
+            lastCount = count;
             User user = userList.get(i);
-            userItems.add(new BeautifulText(user.getUsername(), Color.WHEAT, 20), 0, i+1);
+            userItems.add(new BeautifulText("#" + (count + 1) + " " + user.getUsername(), Color.WHEAT, 20), 0, i+1);
             userItems.add(new BeautifulText(Integer.toString(user.getScore()), Color.WHEAT, 20), 1, i+1);
         }
     }
